@@ -1,0 +1,2 @@
+rootProject.name='GADSLeaderboard'
+include ':app'
