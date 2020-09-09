@@ -8,6 +8,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
@@ -19,35 +20,43 @@ import com.example.gadsleaderboard.adapters.SkillAdapter
 import com.example.gadsleaderboard.fragments.LearnersFragment
 import com.example.gadsleaderboard.fragments.SkillFragment
 import com.example.gadsleaderboard.models.RequestResult
-import com.example.gadsleaderboard.retroTools.Request
+import com.example.gadsleaderboard.retroTools.DataRetriever
 import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_leaders.*
 import kotlinx.android.synthetic.main.fragment_skill.*
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.internals.AnkoInternals.getContext
-import org.jetbrains.anko.longToast
-import org.jetbrains.anko.uiThread
+import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var viewPager: ViewPager
     var tabLayout: TabLayout? = null
-    //private val dr = DataRetriever()
+    private val dr = DataRetriever()
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        setTheme(R.style.AppTheme)
+
 
         viewRefs()
         setTabDetails()
         setUpAdapter()
 
-        requestLink()
+        if (isNetworkConnected()) {
+            getHours()
+            getSkill()
+        }
+        else {
+            AlertDialog.Builder(this@MainActivity).setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again")
+                .setPositiveButton(android.R.string.ok) { _, _ -> }
+                .setIcon(android.R.drawable.ic_dialog_alert).show()
+        }
+
 
         //Initiate LeadersFragment
         if (savedInstanceState == null) {
@@ -92,9 +101,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     //Function to launch SubmitActivity
-    fun startActivity() {
+    fun startActivity(view : View) {
         viewRefs()
-        //val intent = Intent(this, SubmitActivity::class.java)
+        val intent = Intent(this, SubmitActivity::class.java)
         startActivity(intent)
     }
 
@@ -125,70 +134,61 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    //Method to make a network request and display an Alert Dialog
-    @RequiresApi(Build.VERSION_CODES.M)
-    fun requestLink() {
-        val url = "https://gadsapi.herokuapp.com"
-        if (isNetworkConnected()) {
-            doAsync {
-                Request(url).run()
-                uiThread { longToast("Request performed") }
-            }
-        } else {
-            AlertDialog.Builder(this@MainActivity).setTitle("No Internet Connection")
-                .setMessage("Please check your internet connection and try again")
+    //function to get data on top hour learners using kotlin coroutines
+    private fun getHours() {
+        //1 Create a Coroutine scope using a job to be able to cancel when needed
+        val mainActivityJob = Job()
+
+        //2 Handle exceptions if any
+        val errorHandler = CoroutineExceptionHandler { _, exception ->
+            AlertDialog.Builder(this).setTitle("Error")
+                .setMessage(exception.message)
                 .setPositiveButton(android.R.string.ok) { _, _ -> }
                 .setIcon(android.R.drawable.ic_dialog_alert).show()
         }
 
+        //3 the Coroutine runs using the Main (UI) dispatcher
+        val coroutineScope = CoroutineScope(mainActivityJob + Dispatchers.Main)
+        coroutineScope.launch(errorHandler) {
+            //4
+            val result = DataRetriever().getHours()
+            Log.i("HOURSRESULTS!!!", result.toString())
+            leadersRecyclerView.adapter = LearnersAdapter(this@MainActivity,result)
+        }
     }
 
+    //function to get the data on top skill iq learners using kotlin coroutines
+    private fun getSkill(){
+        //1 Create a Coroutine scope using a job to be able to cancel when needed
+        val mainActivityJob = Job()
 
-    private val callbackLearners = object : Callback<RequestResult> {
-        override fun onFailure(call: Call<RequestResult>?, t: Throwable?) {
-            Log.e("MainActivity", "Problem calling GADS API {${t?.message}}")
+        //2 Handle exceptions if any
+        val errorHandler = CoroutineExceptionHandler { _, exception ->
+            AlertDialog.Builder(this).setTitle("Error")
+                .setMessage(exception.message)
+                .setPositiveButton(android.R.string.ok) { _, _ -> }
+                .setIcon(android.R.drawable.ic_dialog_alert).show()
         }
 
-
-        override fun onResponse(call: Call<RequestResult>?, response: Response<RequestResult>?) {
-            response?.isSuccessful.let {
-                val result = RequestResult(response?.body()?.users ?: emptyList())
-                leadersRecyclerView.adapter = LearnersAdapter(this@MainActivity, result)
-            }
-
+        //3 the Coroutine runs using the Main (UI) dispatcher
+        val coroutineScope = CoroutineScope(mainActivityJob + Dispatchers.Main)
+        coroutineScope.launch(errorHandler) {
+            //4
+            val result = DataRetriever().getSkill()
+            Log.i("SKILLRESULT!!!!", result.toString())
+            skillRecyclerView.adapter = SkillAdapter(this@MainActivity,result)
         }
-
     }
 
     //Method to check if the users device is connected to the internet
     @RequiresApi(Build.VERSION_CODES.M)
     private fun isNetworkConnected(): Boolean {
-        //1
         val connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        //2
         val activeNetwork = connectivityManager.activeNetwork
-        //3
         val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        //4
         return networkCapabilities != null &&
                 networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
-
-    private val callbackSkills = object : Callback<RequestResult> {
-        override fun onFailure(call: Call<RequestResult>?, t: Throwable?) {
-            Log.e("MainActivity", "Problem calling GADS API {${t?.message}}")
-        }
-
-
-        override fun onResponse(call: Call<RequestResult>?, response: Response<RequestResult>?) {
-            response?.isSuccessful.let {
-                val result = RequestResult(response?.body()?.users ?: emptyList())
-                skillRecyclerView.adapter = SkillAdapter(this@MainActivity, result)
-            }
-
-        }
-
     }
 
 }
