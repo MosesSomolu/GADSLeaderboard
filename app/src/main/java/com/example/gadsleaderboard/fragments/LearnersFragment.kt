@@ -1,12 +1,11 @@
-package com.example.gadsleaderboard
+package com.example.gadsleaderboard.fragments
 
-import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import com.example.gadsleaderboard.R
 
 // Fragment linked to MainActivity and Viewpager to display data on the Top learners
 class LearnersFragment : Fragment() {
@@ -28,23 +27,6 @@ class LearnersFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_leaders, container, false)
     }
 
-    internal inner class LearnersAdapter(context : Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
 
-        override fun getItemCount(): Int {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-        }
-
-    }
-
-    internal inner class ViewHolder(){
-
-    }
 
 }

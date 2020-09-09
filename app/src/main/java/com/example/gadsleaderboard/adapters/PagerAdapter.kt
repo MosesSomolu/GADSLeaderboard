@@ -1,13 +1,15 @@
-package com.example.gadsleaderboard
+package com.example.gadsleaderboard.adapters
 
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import com.example.gadsleaderboard.fragments.LearnersFragment
+import com.example.gadsleaderboard.fragments.SkillFragment
 
 // ViewPager Adapter. This is used to populate info for the viewPager used in MainActivity
 // It extends FragmentStateAdapter and overrides 3 methods. getPageTitle, getItem and getCount.
-class PagerAdapter(fm: FragmentManager?, tabCount: Int) : FragmentStatePagerAdapter(fm!!, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT){
+class PagerAdapter(fm: FragmentManager?) : FragmentStatePagerAdapter(fm!!, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT){
 
     private val tabTitles = arrayOf("Learning Leaders", "Skill IQ Leaders")
 
