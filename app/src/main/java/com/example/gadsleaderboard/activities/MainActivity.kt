@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.viewpager.widget.ViewPager
@@ -84,10 +85,11 @@ class MainActivity : AppCompatActivity() {
 
 
     //ID references
-    private fun viewRefs() {
+    fun viewRefs() {
         viewPager = findViewById(R.id.viewPager)
         tabLayout = findViewById(R.id.tabLayout)
         findViewById<Button>(R.id.submitButton)
+        findViewById<Button>(R.id.submitRepo)
     }
 
     //Function to link viewPager Adapter with MainActivity and initialize click listeners for viewPager and TabLayout
@@ -106,6 +108,8 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this, SubmitActivity::class.java)
         startActivity(intent)
     }
+
+
 
     //Function to set Titles for the Tabs
     private fun setTabDetails() {
